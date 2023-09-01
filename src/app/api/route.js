@@ -61,8 +61,6 @@ export async function GET(req, res) {
     const daySlug = `generell-${dag}`;
     const genericDay = it.items.filter((item) => item.slug === daySlug);
 
-    console.log({ hej: res });
-
     // Return specific if it exists, or generic if not.
     if (thisDate[0]) {
       console.log("thisDate", thisDate[0]["text-som-visas"]);
