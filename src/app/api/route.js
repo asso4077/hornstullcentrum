@@ -1,24 +1,40 @@
 import Webflow from "webflow-api";
 import { isSameDay, parseISO } from "date-fns";
 
-export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method Not Allowed" });
+const allowCors = (fn) => async (req, res) => {
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,OPTIONS,PATCH,DELETE,POST,PUT"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+  );
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
   }
+  return await fn(req, res);
+};
 
-  // Initialize API
+// Handle GET request
+export async function GET(req, res) {
+  // Initialize the API
   const api = new Webflow({
-    token: "2d84f9720ff8aadf4b0b94cc2f0141b0b7131e4300fa18fc8f248acb43f4eb7c",
+    token: "f7797288bd0730a647f47476d0b84017c4f3a60711ec5675c27421a287362bc7",
   });
 
   try {
+    // Fetch items in the collection "Öppettidersplashes"
     const it = await api.items({
       siteId: "64b6afc54c1a9ceff92d8f2a",
       collectionId: "64b6afc54c1a9ceff92d8f6b",
     });
 
     // Get hours for a specific date
-    const thisDate = it.items.find(
+    const thisDate = it.items.filter(
       (item) => !!item.datum && isSameDay(parseISO(item.datum), new Date())
     );
 
@@ -46,25 +62,29 @@ export default async function handler(req, res) {
         break;
     }
     const daySlug = `generell-${dag}`;
-    const genericDay = it.items.find((item) => item.slug === daySlug);
+    const genericDay = it.items.filter((item) => item.slug === daySlug);
 
     // Return specific if it exists, or generic if not.
-    const response = thisDate
-      ? thisDate["text-som-visas"]
-      : genericDay
-      ? genericDay["text-som-visas"]
-      : "No data available";
-
-    console.log("Response:", response);
-
-    // Send the response as JSON
-    return res.status(200).json({
-      body: response,
-      query: req.query,
-      cookies: req.cookies,
-    });
+    if (thisDate[0]) {
+      console.log("thisDate", thisDate[0]["text-som-visas"]);
+      res.json({
+        body: thisDate[0]["text-som-visas"],
+        query: req.query,
+        cookies: req.cookies,
+      });
+    } else {
+      console.log("genericDate", genericDay[0]["text-som-visas"]);
+      res.json({
+        body: genericDay[0]["text-som-visas"],
+        query: req.query,
+        cookies: req.cookies,
+      });
+    }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "An error occurred" });
+    res.statusCode = 500; // Set the status code directly
+    res.json({ error: "An error occurred" });
   }
 }
+
+export default allowCors(GET);
