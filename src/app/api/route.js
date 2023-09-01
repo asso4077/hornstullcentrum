@@ -19,18 +19,12 @@ const allowCors = (fn) => async (req, res) => {
   return await fn(req, res);
 };
 
-const middleware = allowCors;
-
-// Handle GET request
 export async function GET(req, res) {
-  // Use uppercase GET here
-  // Initialize API
   const api = new Webflow({
     token: "2d84f9720ff8aadf4b0b94cc2f0141b0b7131e4300fa18fc8f248acb43f4eb7c",
   });
 
   try {
-    // Fetch items in the collection "Öppettidersplashes"
     const it = await api.items({
       siteId: "64b6afc54c1a9ceff92d8f2a",
       collectionId: "64b6afc54c1a9ceff92d8f6b",
@@ -67,6 +61,8 @@ export async function GET(req, res) {
     const daySlug = `generell-${dag}`;
     const genericDay = it.items.filter((item) => item.slug === daySlug);
 
+    console.log({ hej: res });
+
     // Return specific if it exists, or generic if not.
     if (thisDate[0]) {
       console.log("thisDate", thisDate[0]["text-som-visas"]);
@@ -91,10 +87,8 @@ export async function GET(req, res) {
     }
   } catch (error) {
     console.error(error);
-    res.statusCode = 500; // Set the status code directly
     res.setHeader("Content-Type", "application/json");
+    res.statusCode = 500; // Set the status code directly
     res.end(JSON.stringify({ error: "An error occurred" }));
   }
 }
-
-export default middleware(GET);
