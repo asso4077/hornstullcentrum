@@ -19,6 +19,8 @@ const allowCors = (fn) => async (req, res) => {
   return await fn(req, res);
 };
 
+const middleware = allowCors;
+
 // Handle GET request
 export async function GET(req, res) {
   // Use uppercase GET here
@@ -68,21 +70,31 @@ export async function GET(req, res) {
     // Return specific if it exists, or generic if not.
     if (thisDate[0]) {
       console.log("thisDate", thisDate[0]["text-som-visas"]);
-      res.json({
-        body: thisDate[0]["text-som-visas"],
-        query: req.query,
-        cookies: req.cookies,
-      });
+      res.setHeader("Content-Type", "application/json");
+      res.end(
+        JSON.stringify({
+          body: thisDate[0]["text-som-visas"],
+          query: req.query,
+          cookies: req.cookies,
+        })
+      );
     } else {
       console.log("genericDate", genericDay[0]["text-som-visas"]);
-      res.json({
-        body: genericDay[0]["text-som-visas"],
-        query: req.query,
-        cookies: req.cookies,
-      });
+      res.setHeader("Content-Type", "application/json");
+      res.end(
+        JSON.stringify({
+          body: genericDay[0]["text-som-visas"],
+          query: req.query,
+          cookies: req.cookies,
+        })
+      );
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "An error occurred" });
+    res.statusCode = 500; // Set the status code directly
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ error: "An error occurred" }));
   }
 }
+
+export default middleware(GET);
