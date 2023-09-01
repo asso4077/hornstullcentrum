@@ -23,7 +23,7 @@ const allowCors = (fn) => async (req, res) => {
 };
 
 const handler = (req, res) => {
-  // Initialize the API
+  // Initialize  API
   const api = new Webflow({
     token: "f7797288bd0730a647f47476d0b84017c4f3a60711ec5675c27421a287362bc7",
   });
